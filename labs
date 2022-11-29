@@ -1,1 +1,22 @@
+Containerize & Deploy a Nginx Web-Server
+#create dockerfile
 nano Dockerfile
+--FROM ubuntu
+--LABEL maintainer="Zeal Vora <instructors@kplabs.in>"
+--RUN apt-get update
+--RUN apt-get -y install nginx
+--EXPOSE 80/tcp
+--CMD ["nginx", "-g", "daemon off;"]          --> ctrl+o , enter , ctrl+x
+#build image from dockerfile
+docker build -t nginx-image .
+docker images
+#deploy the container
+docker run -d -p 8080:80 nginx-image
+docker ps
+#check
+curl localhost:8080
+docker ps -a
+docker inspect <container_name>
+docker inspect --format='{{.NetworkSettings.Networks.bridge.IPAddress}}' <container_id>
+docker inspect --format='{{.NetworkSettings.Networks.bridge.IPAddress}}' <container_id > nginx_ip.txt
+cat nginx_ip.txt
