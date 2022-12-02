@@ -1,0 +1,57 @@
+Containerize a Weather App using Dockerfile
+
+git version
+docker info
+docker run hello-world
+docker images
+git clone https://github.com/CodeWithPraveen/labs-docker-dockerfile.git
+ls
+
+cd labs-docker-dockerfile
+ls -la
+touch Dockerfile
+ls -la
+vim Dockerfile
+# base stage
+FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
+WORKDIR /app
+EXPOSE 80
+EXPOSE 443
+# build stage
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+WORKDIR /src
+COPY ["BrezyWeather.csproj", "."]
+RUN dotnet restore "./BrezyWeather.csproj"
+COPY . .
+WORKDIR "/src/."
+RUN dotnet build "BrezyWeather.csproj" -c Release -o /app/build
+# publish stage
+FROM build AS publish
+RUN dotnet publish "BrezyWeather.csproj" -c Release -o /app/publish /p:UseAppHost=false
+# final stage
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "BrezyWeather.dll"]
+cat Dockerfile
+
+vim .dockerignore
+**/bin
+**/obj
+docker build -t brezyweather:latest .
+docker images
+docker tag brezyweather:latest brezyweather:1.0.0        --tag as 1.0
+
+docker run -d brezyweather
+docker ps
+docker stop <container_name>
+docker run -d -p 5000:80 --name brezyweather-api brezyweather:1.0.0
+docker ps
+curl -verbose 'http://127.0.0.1:5000/weather'
+curl -v --request GET 'http://127.0.0.1:5000/weather'
+
+docker stop brezyweather-api
+docker container prune
+docker ps
+docker system prune --all
+docker images
